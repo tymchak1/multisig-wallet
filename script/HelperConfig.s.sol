@@ -22,8 +22,8 @@ contract HelperConfig is Script {
     function getSepoliaEthConfig() public pure returns (NetworkConfig memory) {
         address[] memory owners = new address[](3);
         owners[0] = 0x7eF78e0ef51A18Ce23269707CA3A256b69F884c1;
-        owners[2] = 0xCd926c7cfC17adF27Cf8DE5Ffe1079dEb8EEa908;
-        owners[3] = 0x00A9cc0DC6C0c982aD7b818AAA074017b13cac13;
+        owners[1] = 0xCd926c7cfC17adF27Cf8DE5Ffe1079dEb8EEa908;
+        owners[2] = 0x00A9cc0DC6C0c982aD7b818AAA074017b13cac13;
 
         return NetworkConfig({owners: owners, threshold: 2});
     }

@@ -128,37 +128,30 @@ contract MultiSigWallet {
         external
         onlyOwner
         txExists(_txId)
-        isApproved(_txId)
         notExecuted(_txId)
         notCanceled(_txId)
+        isApproved(_txId)
     {
+        if (_hasEnoughApprovals(_txId)) {
+            revert AlreadyApproved();
+        }
+
         approved[_txId][msg.sender] = false;
         emit Revoke(msg.sender, _txId);
     }
 
     function cancel(uint256 _txId) external onlyOwner txExists(_txId) notExecuted(_txId) notCanceled(_txId) {
+        if (_hasEnoughApprovals(_txId)) {
+            revert AlreadyApproved();
+        }
+
         transactions[_txId].canceled = true;
         emit Cancel(_txId);
     }
 
-    /**
-     * @notice Follows CEI.
-     * @notice Executes a transaction if the threshold of approvals is met.
-     * @param _txId ID of the transaction to execute
-     */
     function execute(uint256 _txId) external onlyOwner txExists(_txId) notExecuted(_txId) notCanceled(_txId) {
         // Checks
-        uint256 approveGiven = 0;
-        for (uint256 i = 0; i < owners.length; i++) {
-            if (approved[_txId][owners[i]]) {
-                approveGiven++;
-            }
-        }
-
-        if (approveGiven < threshold) {
-            revert NotApproved();
-        }
-
+        _requireEnoughApprovals(_txId);
         // Effects
         Transaction storage transaction = transactions[_txId];
         transaction.executed = true;
@@ -168,13 +161,39 @@ contract MultiSigWallet {
         if (!success) {
             revert TransactionFailed();
         }
+
+        emit Execute(_txId);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                            INTERNAL FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function _hasEnoughApprovals(uint256 _txId) internal view returns (bool) {
+        uint256 approveGiven = 0;
+        for (uint256 i = 0; i < owners.length; i++) {
+            if (approved[_txId][owners[i]]) {
+                approveGiven++;
+            }
+        }
+        return approveGiven >= threshold;
+    }
+
+    function _requireEnoughApprovals(uint256 _txId) internal view {
+        if (!_hasEnoughApprovals(_txId)) {
+            revert NotApproved();
+        }
     }
 
     /*//////////////////////////////////////////////////////////////
                             GETTER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function getTransactionById(uint256 _txId) public view returns (Transaction memory) {
+    function getWalletBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
+
+    function getTransactionById(uint256 _txId) external view returns (Transaction memory) {
         return transactions[_txId];
     }
 

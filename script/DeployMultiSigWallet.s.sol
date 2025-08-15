@@ -6,14 +6,12 @@ import {MultiSigWallet} from "../src/MultiSigWallet.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
 contract DeployMultiSigWallet is Script {
-    function run() external returns (MultiSigWallet, HelperConfig) {
+    function run() public returns (MultiSigWallet, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
-        (address[] memory owners, uint256 threshold) = helperConfig.getActiveNetworkConfig();
-
         vm.startBroadcast();
+        (address[] memory owners, uint256 threshold) = helperConfig.getActiveNetworkConfig();
         MultiSigWallet multiSigWallet = new MultiSigWallet(owners, threshold);
         vm.stopBroadcast();
-
         return (multiSigWallet, helperConfig);
     }
 }

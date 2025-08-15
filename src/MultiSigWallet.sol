@@ -213,7 +213,14 @@ contract MultiSigWallet {
         return user.balance;
     }
 
-    function getTransactionsLength() external view returns (uint256) {
+    function getTransactionCount() external view returns (uint256) {
         return transactions.length;
+    }
+
+    function getOwnerByIndex(uint256 index) external view returns (address) {
+        if (index >= owners.length) {
+            revert InvalidAddress();
+        }
+        return owners[index];
     }
 }

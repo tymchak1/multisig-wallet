@@ -73,7 +73,7 @@ contract MultiSigWalletIntegrationTest is Test {
         vm.startPrank(owner);
         wallet.submit(RANDOM_USER, 1 ether, "");
         vm.stopPrank();
-        wallet.getTransactionsLength() == 1;
+        wallet.getTransactionCount() == 1;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -430,6 +430,17 @@ contract MultiSigWalletIntegrationTest is Test {
                               GETTER TESTS
     //////////////////////////////////////////////////////////////*/
 
+    function testGetWalletBalanceReturnsCorrectValue() public {
+        uint256 initialBalance = wallet.getWalletBalance();
+        assertEq(initialBalance, STARTING_WALLET_BALANCE);
+
+        (bool sent,) = address(wallet).call{value: 3 ether}("");
+        require(sent, "ETH transfer failed");
+
+        uint256 newBalance = wallet.getWalletBalance();
+        assertEq(newBalance, STARTING_WALLET_BALANCE + 3 ether);
+    }
+
     function testGetTransactionByIdReturnsCorrectData() public {
         vm.startPrank(owners[0]);
         wallet.submit(RANDOM_USER, 1 ether, hex"1234");
@@ -474,13 +485,26 @@ contract MultiSigWalletIntegrationTest is Test {
     }
 
     function testGetTransactionsLengthReturnsCorrectValue() public {
-        assertEq(wallet.getTransactionsLength(), 0);
+        assertEq(wallet.getTransactionCount(), 0);
 
         vm.startPrank(owners[0]);
         wallet.submit(RANDOM_USER, 1 ether, "");
         wallet.submit(RANDOM_USER, 2 ether, "");
         vm.stopPrank();
 
-        assertEq(wallet.getTransactionsLength(), 2);
+        assertEq(wallet.getTransactionCount(), 2);
+    }
+
+    function testGetOwnerByIndexReturnsCorrectOwner() public view {
+        for (uint256 i = 0; i < owners.length; i++) {
+            address ownerFromContract = wallet.getOwnerByIndex(i);
+            assertEq(ownerFromContract, owners[i]);
+        }
+    }
+
+    function testGetOwnerByIndexRevertsIfInvalidIndex() public {
+        uint256 invalidIndex = owners.length;
+        vm.expectRevert(MultiSigWallet.InvalidAddress.selector);
+        wallet.getOwnerByIndex(invalidIndex);
     }
 }

@@ -40,6 +40,13 @@ contract MultiSigWalletUnitTest is Test {
         assertEq(wallet.getThreshold(), THRESHOLD);
     }
 
+    function testConstructorRevertsWithNoOwners() public {
+        address[] memory noOwners;
+
+        vm.expectRevert(MultiSigWallet.InvalidAddress.selector);
+        new MultiSigWallet(noOwners, 1);
+    }
+
     function testConstructorRevertsWithZeroAddress() public {
         address[] memory invalidOwners = new address[](2);
         invalidOwners[0] = alice;

@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 /**
  * @title MultiSigWallet
- * @author Your Name
+ * @author Anastasia Tymchak
  * @notice A multi-signature wallet that requires multiple owner approvals to execute transactions
  * @dev Implements a secure multi-signature wallet with configurable threshold
  */
@@ -298,13 +298,13 @@ contract MultiSigWallet {
         Transaction storage transaction = transactions[_txId];
         transaction.executed = true;
 
+        emit Execute(_txId);
+
         // Interactions
         (bool success,) = transaction.to.call{value: transaction.value}(transaction.data);
         if (!success) {
             revert TransactionFailed();
         }
-
-        emit Execute(_txId);
     }
 
     /*//////////////////////////////////////////////////////////////
